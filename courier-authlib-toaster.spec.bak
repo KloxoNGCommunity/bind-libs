@@ -1,5 +1,5 @@
 %define	name courier-authlib
-%define	pversion 0.72.1
+%define	pversion 0.59.2
 %define 	bversion 1.3
 %define	rpmrelease 13.kng%{?dist}
 
