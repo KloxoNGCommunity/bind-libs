@@ -29,7 +29,7 @@ Source2:	supervise-authlib-log.run.bz2
 Source3:	authdaemonrc.bz2
 BuildRoot:	%{_tmppath}/%{name}-%{pversion}-root
 BuildRequires:    %{_includedir}/ltdl.h
-BuildRequires:	libtool-ltdl-devel, mysql-devel, zlib-devel, gdbm-devel, expect, gcc-c++, gcc, make, procps-ng
+BuildRequires:	libtool-ltdl-devel, mariadb-devel, zlib-devel, gdbm-devel, expect, gcc-c++, gcc, make, procps-ng
 BuildRequires:	qmail-toaster >= 1.03-1.3.15
 BuildRequires: vpopmail-toaster >= 5.4.17
 BuildRequires: libvpopmail-devel >= 5.4.17
