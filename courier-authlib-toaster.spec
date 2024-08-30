@@ -1,7 +1,7 @@
 %define	name courier-authlib
-%define	pversion 0.59.2
+%define	pversion 0.72.3
 %define 	bversion 1.3
-%define	rpmrelease 14.kng%{?dist}
+%define	rpmrelease 1.kng%{?dist}
 
 %define	release %{bversion}.%{rpmrelease}
 BuildRequires:	automake, autoconf
