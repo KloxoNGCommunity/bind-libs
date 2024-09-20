@@ -1,0 +1,340 @@
+#
+# Copyright 1998 - 2024 Double Precision, Inc.  See COPYING for
+# distribution information.
+
+# No dist tag from mock; detect distro the old fashioned way
+%if 0%{!?dist:1}
+%define courier_release %(release="`rpm -q --queryformat='.rh%{VERSION}' redhat-release 2>/dev/null`" ; if test $? != 0 ; then release="`rpm -q --queryformat='.fc%{VERSION}' fedora-release 2>/dev/null`" ; if test $? != 0 ; then release="" ; fi ; fi ; echo "$release")
+%else
+%define courier_release %{nil}
+%endif
+
+# --define 'mailuser courier'
+# --define `mailgroup courier'
+
+%if 0%{!?mailuser:1}
+%define mailuser daemon
+%endif
+
+%if 0%{!?mailgroup:1}
+%define mailgroup daemon
+%endif
+
+################################################################################
+
+Name:           courier-authlib
+Version:        0.72.3
+Release: 101%{?dist}%{?courier_release}
+Summary:        Courier authentication library
+
+Group:          System Environment/Daemons
+License:        GPLv3
+URL:            https://www.courier-mta.org
+Requires:       courier-authlib-config-%{mailuser}-%{mailgroup} = 0:%{version}-%{release}
+
+################################################################################
+
+Source:         http://downloads.sourceforge.net/courier/%{name}-%{version}.tar.bz2
+
+################################################################################
+
+BuildRequires:      libtool
+BuildRequires:      procps-ng
+BuildRequires:      openldap-devel
+BuildRequires:      mariadb-devel zlib-devel sqlite-devel
+BuildRequires:      postgresql-devel
+BuildRequires:      gdbm-devel
+BuildRequires:      pam-devel
+BuildRequires:      libidn2-devel
+BuildRequires:      expect
+BuildRequires:      gcc-c++
+BuildRequires:	    redhat-rpm-config
+BuildRequires:      courier-unicode-devel
+BuildRequires:      %{__make}
+BuildRequires:      shadow-utils
+BuildRequires:      libtool-ltdl-devel
+
+%if 0%(rpm -q redhat-release >/dev/null 2>&1 || rpm -q fedora-release >/dev/null 2>&1 || exit 0; echo "1")
+BuildRequires:      redhat-rpm-config
+BuildRequires:      /usr/bin/ps
+%endif
+
+%if 1
+Requires(post):     systemd
+Requires(preun):    systemd
+Requires(postun):    systemd
+# systemd-rpm-macros
+
+%if 0%(rpm -q centos-release >/dev/null 2>&1 && echo "1"; exit 0)
+BuildRequires:      /usr/lib/rpm/macros.d/macros.systemd
+%else
+BuildRequires:	    systemd-rpm-macros
+%endif
+%else
+Requires(post):     /sbin/chkconfig
+Requires(preun):    /sbin/chkconfig
+%endif
+
+%define need_perl_generators %(if rpm -q fedora-release >/dev/null 2>/dev/null; then echo "1"; exit 0; fi; echo "0"; exit 1)
+
+%if %need_perl_generators
+BuildRequires: perl-generators
+%endif
+
+################################################################################
+
+%description
+The Courier authentication library provides authentication services for
+other Courier applications.
+
+################################################################################
+
+%package config-%{mailuser}-%{mailgroup}
+Provides:   courier-authlib-uidgid
+Conflicts:  courier-authlib-uidgid
+Summary:    Courier-authlib configuration package
+Group:      System Environment/Daemons
+Requires(pre): shadow-utils
+
+%description config-%{mailuser}-%{mailgroup}
+This courier-authlib package was configured to use system
+user "%{mailuser}" and system group "%{mailgroup}".
+
+This config sub-package ensures that this user/group exists,
+and prevents unintentional courier-authlib updates to versions
+that were built with a different user/group configuration.
+
+%package devel
+Summary:    Development libraries for the Courier authentication library
+Group:      Development/Libraries
+Requires:   courier-authlib = 0:%{version}-%{release}
+
+%description devel
+This package contains the development libraries and files needed to compile
+Courier packages that use this authentication library.  Install this
+package in order to build the rest of the Courier packages.  After they are
+built and installed this package can be removed.  Files in this package
+are not needed at runtime.
+
+################################################################################
+
+%package userdb
+
+Summary:    Userdb support for the Courier authentication library
+Group:      System Environment/Daemons
+Requires:   courier-authlib = 0:%{version}-%{release}
+
+%description userdb
+This package installs the userdb support for the Courier authentication
+library.  Userdb is a simple way to manage virtual mail accounts using
+a GDBM-based database file.
+Install this package in order to be able to authenticate with userdb.
+
+################################################################################
+
+%package ldap
+
+Summary:    LDAP support for the Courier authentication library
+Group:      System Environment/Daemons
+Requires:   courier-authlib = 0:%{version}-%{release}
+
+%description ldap
+This package installs LDAP support for the Courier authentication library.
+Install this package in order to be able to authenticate using LDAP.
+
+################################################################################
+
+%package mysql
+
+Summary:    MySQL support for the Courier authentication library
+Group:      System Environment/Daemons
+Requires:   courier-authlib = 0:%{version}-%{release}
+
+%description mysql
+This package installs MySQL support for the Courier authentication library.
+Install this package in order to be able to authenticate using MySQL.
+
+%package sqlite
+
+Summary:    SQLite support for the Courier authentication library
+Group:      System Environment/Daemons
+Requires:   courier-authlib = 0:%{version}-%{release}
+
+%description sqlite
+This package installs SQLite support for the Courier authentication library.
+Install this package in order to be able to authenticate using an SQLite-based
+database file.
+
+################################################################################
+
+%package pgsql
+
+Summary:    PostgreSQL support for the Courier authentication library
+Group:      System Environment/Daemons
+Requires:   courier-authlib = 0:%{version}-%{release}
+
+%description pgsql
+This package installs PostgreSQL support for the Courier authentication
+library.
+Install this package in order to be able to authenticate using PostgreSQL.
+
+################################################################################
+
+%package pipe
+
+Summary:    External authentication module that communicates via pipes
+Group:      System Environment/Daemons
+Requires:   courier-authlib = 0:%{version}-%{release}
+
+%description pipe
+This package installs the authpipe module, which is a generic plugin
+that enables authentication requests to be serviced by an external
+program, then communicates through messages on stdin and stdout.
+
+################################################################################
+
+%prep
+%setup -q
+
+getent group %{mailgroup} >/dev/null || groupadd -r %{mailgroup}
+getent passwd %{mailuser} >/dev/null || useradd -r -g %{mailgroup} -d %{_exec_prefix}/lib/courier -s /sbin/nologin -c "Courier Mail Server" %{mailuser}
+%build
+%configure \
+    --with-mailuser=%{mailuser} \
+    --with-mailgroup=%{mailgroup} \
+    %{?extra_options}
+%{__make} -s %{_smp_mflags}
+
+%install
+rm -rf $RPM_BUILD_ROOT
+MAKEFLAGS= %{__make} -j 1 install DESTDIR=$RPM_BUILD_ROOT
+%{__rm} -f $RPM_BUILD_ROOT%{_libdir}/courier-authlib/*.a
+%{__install} -m 555 sysconftool $RPM_BUILD_ROOT%{_libexecdir}/courier-authlib
+
+./courierauthconfig --configfiles >configtmp
+. ./configtmp
+
+d=`pwd`
+cd $RPM_BUILD_ROOT%{_localstatedir}/spool/authdaemon || exit 1
+$d/authmksock ./socket || exit 1
+cd $d || exit 1
+touch $RPM_BUILD_ROOT%{_localstatedir}/spool/authdaemon/pid.lock || exit 1
+touch $RPM_BUILD_ROOT%{_localstatedir}/spool/authdaemon/pid || exit 1
+%{__chmod} 777 $RPM_BUILD_ROOT%{_localstatedir}/spool/authdaemon/socket || exit 1
+
+DESTDIR=$RPM_BUILD_ROOT sh mkmanifest.sh
+
+for ext in base devel mysql sqlite ldap pgsql userdb pipe
+do
+	/usr/bin/perl -e '
+print "%defattr(-,daemon,daemon,-)\n";
+while (<>)
+{
+    chomp;
+    my ($n, $perm, $u, $g, $type) = split(/\s/);
+
+    if ($type)
+    {
+	print "%" . $type . " ";
+    }
+
+    if ($perm)
+    {
+	print "%attr(" . "$perm,$u,$g" . ") "
+	      unless -l "$ENV{RPM_BUILD_ROOT}/$n";
+    }
+    print "$n\n";
+}
+' <filelist.$ext >configfiles.$ext || exit 1
+done
+
+%if 1
+%{__mkdir_p} $RPM_BUILD_ROOT%{_datadir}
+%{__install} -m 555 courier-authlib.sysvinit $RPM_BUILD_ROOT%{_libexecdir}/courier-authlib
+
+%{__mkdir_p} $RPM_BUILD_ROOT/lib/systemd/system
+%{__install} -m 644 courier-authlib.service $RPM_BUILD_ROOT/lib/systemd/system
+%else
+%{__mkdir_p} $RPM_BUILD_ROOT%{_sysconfdir}/rc.d/init.d
+%{__install} -m 555 courier-authlib.sysvinit \
+        $RPM_BUILD_ROOT%{_sysconfdir}/rc.d/init.d/courier-authlib
+%endif
+
+%post
+%{_libexecdir}/courier-authlib/sysconftool %{_sysconfdir}/authlib/*.dist >/dev/null
+%if 1
+if test -f /etc/init.d/courier-authlib
+then
+# Upgrade to systemd
+
+        /sbin/chkconfig --del courier-authlib
+        /bin/systemctl stop courier-authlib.service || :
+fi
+%systemd_post courier-authlib.service
+/bin/systemctl daemon-reload >/dev/null 2>&1 || :
+%else
+/sbin/chkconfig --del courier-authlib
+/sbin/chkconfig --add courier-authlib
+%endif
+%pre config-%{mailuser}-%{mailgroup}
+getent group %{mailgroup} >/dev/null || groupadd -r %{mailgroup}
+getent passwd %{mailuser} >/dev/null || useradd -r -g %{mailgroup} -d %{_exec_prefix}/lib/courier -s /sbin/nologin -c "Courier Mail Server" %{mailuser}
+
+%preun
+if test "$1" = "0"
+then
+%if 1
+%systemd_preun courier-authlib.service
+%else
+        /sbin/chkconfig --del courier-authlib
+%endif
+fi
+
+%postun
+%if 1
+if [ $1 -eq 0 ]
+then
+    /bin/systemctl daemon-reload
+fi
+%systemd_postun_with_restart courier-authlib.service
+%endif
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+
+%files -f configfiles.base
+%if 1
+%attr(644,root,root) /lib/systemd/system/*
+%endif
+%ghost %attr(600, root, root) %{_localstatedir}/spool/authdaemon/pid.lock
+%ghost %attr(644, root, root) %{_localstatedir}/spool/authdaemon/pid
+%ghost %attr(-, root, root) %{_localstatedir}/spool/authdaemon/socket
+
+%files -f configfiles.userdb userdb
+
+%files -f configfiles.devel devel
+
+%files -f configfiles.ldap ldap
+
+%files -f configfiles.mysql mysql
+
+%files -f configfiles.sqlite sqlite
+
+%files -f configfiles.pgsql pgsql
+
+%files -f configfiles.pipe pipe
+
+%files config-%{mailuser}-%{mailgroup}
+
+%changelog
+
+* Thu Sep  7 2006 Chris Petersen <rpm@forevermore.net>                  0.58-2
+- Make the spec a little prettier
+- Replace BuildPreReq with BuildRequires
+- Remove period from summaries (rpmlint)
+- Fix release tag to use %{?dist} macro if it's present
+- Change distro-detection to use "rh" and "fc" for version detection, and add support for mandriva
+
+* Sun Oct  3 2004 Mr. Sam <sam@email-scan.com>                          0.50-1
+- Initial build.

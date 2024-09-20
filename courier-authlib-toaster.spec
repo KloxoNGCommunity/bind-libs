@@ -1,7 +1,7 @@
 %define	name courier-authlib
 %define	pversion 0.72.3
 %define 	bversion 1.3
-%define	rpmrelease 1.kng%{?dist}
+%define	rpmrelease 2.kng%{?dist}
 
 %define	release %{bversion}.%{rpmrelease}
 BuildRequires:	automake, autoconf
@@ -36,7 +36,16 @@ BuildRequires: libvpopmail-devel >= 5.4.17
 Requires:	qmail-toaster >= 1.03-1.3.15, vpopmail-toaster >= 5.4.17, procps-ng
 Obsoletes:	courier-imap-toaster < 4
 Packager:       Jake Vickers <jake@qmailtoaster.com>
-Patch1: courier-authlib-library-toaster-kloxong.patch
+
+Patch1: courier-authlib-patch-authvchkpw
+Patch2: patch-Makefile.in
+Patch3:  patch-authdaemond.in
+Patch4: patch-authdaemonrc.in
+Patch5: patch-configure
+Patch6: patch-libs_liblock_locktest.c
+Patch7: patch-userdb__pw2userdb.in
+
+Patch11: courier-authlib-library-toaster-kloxong.patch
 
 %define	name courier-authlib
 
@@ -49,11 +58,19 @@ This package, courier-authlib, allows the new courier imap to use vpopmail for a
 
 
 #------------------------------------------------------------------------------------
+
 %prep
 #------------------------------------------------------------------------------------
 %setup -q -n %{name}-%{pversion}
+%patch1 -p0
+%patch2 -p0
+%patch3 -p0
+%patch4 -p0
+%patch5 -p0
+%patch6 -p0
+%patch7 -p0
 
-%patch1 -p1
+%patch11 -p1
 
 # Cleanup for the compiler
 #------------------------------------------------------------------------------------
@@ -165,7 +182,7 @@ fi
 %attr(0751,qmaill,qmail) %{_spath}/authlib/log/run
 %attr(0644,root,root) %{_mandir}/man1/*
 %attr(0644,root,root) %{_mandir}/man3/*
-%attr(0644,root,root) %{_mandir}/man8/*
+#%%attr(0644,root,root) %%{_mandir}/man8/*
 
 
 #------------------------------------------------------------------------------------
