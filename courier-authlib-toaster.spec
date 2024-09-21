@@ -33,6 +33,7 @@ BuildRequires:	libtool-ltdl-devel, mariadb-devel, zlib-devel, gdbm-devel, expect
 BuildRequires:	qmail-toaster >= 1.03-1.3.15
 BuildRequires: vpopmail-toaster >= 5.4.17
 BuildRequires: libvpopmail-devel >= 5.4.17
+BuildRequires: courier-unicode-devel
 Requires:	qmail-toaster >= 1.03-1.3.15, vpopmail-toaster >= 5.4.17, procps-ng
 Obsoletes:	courier-imap-toaster < 4
 Packager:       Jake Vickers <jake@qmailtoaster.com>
