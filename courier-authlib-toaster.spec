@@ -191,6 +191,10 @@ fi
 #------------------------------------------------------------------------------------
 %changelog
 #------------------------------------------------------------------------------------
+* Sun Sep 22 2024 John Pierce <john@luckytanuki.com>
+- upgrade to 0.72.3
+- restore authvchkpw with patches from https://github.com/freebsd/freebsd-ports/tree/main/security/courier-authlib/files
+
 * Wed Dec 18 2019 Dionysis Kladis <dkstiler@gmail.com> 0.59.2-1.3.13.kng
 - added missing depedencies
 - added a patch to work with modified qmail-toaster packages named courier-authlib-library-toaster-kloxong.patch
